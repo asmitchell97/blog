@@ -1,11 +1,6 @@
-<!DOCTYPE html>
+<h1>Posts</h1>
 
-<title>Posts</title>
-<link rel="stylesheet" href="/css/app.css">
-
-<body>
-    <h1>Posts</h1>
-
+<x-layout>
     @foreach ($posts as $post) 
         <article>
             <h1>
@@ -16,4 +11,7 @@
             <p>{!! $post->getExcerpt() !!}</p>
         </article>
     @endforeach
-</body>
+
+    <x-fancybutton>Click me</x-fancybutton>
+
+</x-layout>
