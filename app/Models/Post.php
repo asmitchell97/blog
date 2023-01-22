@@ -46,16 +46,26 @@ class Post {
         return $posts; 
     }
 
-    public static function find(string $slug): Post
+    private static function find(string $slug): ?Post
     {
-
         // When using protected properties:
         $post = static::all()
             ->filter(fn($post) => $post->getSlug() === $slug)
             ->first();
+
         return $post;
     }
 
+    public static function findOrFail(string $slug): Post
+    {
+        $post = static::find($slug);
+
+        if (! $post) {
+            throw new ModelNotFoundException();
+        }
+        
+        return $post;
+    }
 
 
 	/**
