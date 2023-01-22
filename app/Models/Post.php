@@ -29,7 +29,7 @@ class Post {
     {
         // Must clear cache on new post creation when storing forever
         // To look at the cache, run php artsian tinker cache->get('posts.all')
-        $posts = cache()->rememberForever('posts.all', function () { 
+        $posts = cache()->remember('posts.all', 60, function () { 
             return collect(File::files(resource_path('posts/')))
                 ->map(fn ($file) => YamlFrontMatter::parseFile($file)) // We can double map here to make use of arrow functions
                  ->map(fn ($doc) => new Post(

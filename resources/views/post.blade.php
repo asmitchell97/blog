@@ -2,13 +2,13 @@
 <link rel="stylesheet" href="/css/app.css">
 
 <h1>
-    <?= $post->getTitle(); ?>
+    {{ $post->getTitle() }}
 </h1>
 <h2>
-    <?= $post->getExcerpt(); ?>
+    {{ $post->getExcerpt() }}
 </h2>
 <p>
-    <?= $post->getBody(); ?>
+    {!! $post->getBody() !!}
 </p>
 
 <a href="/posts">Back to posts</a>
