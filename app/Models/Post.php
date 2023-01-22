@@ -27,49 +27,12 @@ class Post {
 
     public static function all(): collection
     {
-
-        // Evolution here of doing the same thing in better ways
-        // $files = File::files(resource_path('posts/'))
-
-        // $posts = [];
-        // foreach ($files as $file) {
-        //     $doc = YamlFrontMatter::parseFile($file);
-        //     $posts[] = new Post(
-        //         $doc->title,
-        //         $doc->excerpt,
-        //         $doc->creationDate,
-        //         $doc->body(),
-        //         $doc->slug
-        //     );
-        // }
-
-        // $posts = array_map(function ($file) {
-        //     $doc = YamlFrontMatter::parseFile($file);
-        //     return new Post(
-        //         $doc->title,
-        //         $doc->excerpt,
-        //         $doc->creationDate,
-        //         $doc->body(),
-        //         $doc->slug
-        //     );
-        // }, $files);
-
-        // $posts = collect($files)
-        //     ->map(function ($file) {
-        //         $doc = YamlFrontMatter::parseFile($file);
-        //         return new Post(
-        //                 $doc->title,
-        //                 $doc->excerpt,
-        //                 $doc->creationDate,
-        //             $doc->body(),
-        //                 $doc->slug
-        //         );
-        //     });
-
-
-        $posts = collect(File::files(resource_path('posts/')))
-            ->map(fn ($file) => YamlFrontMatter::parseFile($file)) // We can double map here to make use of arrow functions
-            ->map(fn ($doc) => new Post(
+        // Must clear cache on new post creation when storing forever
+        // To look at the cache, run php artsian tinker cache->get('posts.all')
+        $posts = cache()->rememberForever('posts.all', function () { 
+            return collect(File::files(resource_path('posts/')))
+                ->map(fn ($file) => YamlFrontMatter::parseFile($file)) // We can double map here to make use of arrow functions
+                 ->map(fn ($doc) => new Post(
                     $doc->title,
                     $doc->excerpt,
                     $doc->creationDate,
@@ -78,50 +41,13 @@ class Post {
                 )
             )
             ->sortBy(fn ($post) => $post->getCreationDate());
+        });
 
         return $posts; 
-
-        // Must clear cache on new post creation when storing forever
-        // To look at the cache, run php artsian tinker cache->get('posts.all')
-        // $posts = cache()->rememberForever('posts.all', function () { 
-        //     return collect(File::files(resource_path('posts/')))
-        //         ->map(fn ($file) => YamlFrontMatter::parseFile($file)) // We can double map here to make use of arrow functions
-        //          ->map(fn ($doc) => new Post(
-        //             $doc->title,
-        //             $doc->excerpt,
-        //             $doc->creationDate,
-        //             $doc->body(),
-        //             $doc->slug
-        //         )
-        //     )
-        //     ->sortBy('creationDate');
-        // });
-
-        // return $posts; 
     }
 
     public static function find(string $slug): Post
     {
-        // $path = resource_path("posts/$slug.html");
-
-        // if (!file_exists($path)) {
-        //     throw new ModelNotFoundException('Cannot find post for ' . $slug);
-        // }
-
-        // $post = cache()->remember("posts.{$slug}", 5, function() use ($path) {
-        //     $doc = YamlFrontMatter::parseFile(($path));
-        //     $post = new Post(
-        //         $doc->title,
-        //         $doc->excerpt,
-        //         $doc->creationDate,
-        //         $doc->body(),
-        //         $doc->slug
-        //     );
-        //     return $post;
-        // });
-
-        // Below works when we have public properties
-        // return static::all()->firstWhere('slug', $slug);
 
         // When using protected properties:
         $post = static::all()
