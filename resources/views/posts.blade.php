@@ -4,11 +4,22 @@
     @foreach ($posts as $post) 
         <article>
             <h1>
-                <a href="/posts/{{ $post->getSlug() }}">
-                    {{ $post->getTitle() }}
+                <a href="/posts/{{ $post->slug }}">
+                    {!! $post->title !!}
                 </a>
             </h1>
-            <p>{!! $post->getExcerpt() !!}</p>
+
+            <p>
+                By <a href="/authors/{{ $post->author->username }}">{{ $post->author->name }}</a> in <a href="categories/{{ $post->category->slug }}">{{ $post->category->name }}</a> 
+            </p>
+
+            <p>
+                <a href="/categories/{{ $post->category->slug }}">
+                    {!! $post->category->name !!}
+                </a>
+            </p>
+
+            <p>{!! $post->excerpt !!}</p> <!--Double exclamation mark prevents escaping the data. Only do when in control of the data!-->
         </article>
     @endforeach
 

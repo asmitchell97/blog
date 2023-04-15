@@ -2,149 +2,42 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\File;
-use Spatie\YamlFrontMatter\YamlFrontMatter;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
+class Post extends Model
+{
+    use HasFactory;
 
-class Post {
+    // This allows us to pull in the category data with every single get request for Posts
+    protected $with = ['category'];
 
-    protected string $title;
-    protected string $excerpt;
-    protected string $creationDate;
-    protected string $body;
-    protected string $slug;
+    protected const DEFAULT_ROUTE = 'slug';
 
-    public function __construct(string $title, string $excerpt, string $date, string $body, string $slug)
+    // This allows for mass assignment of properties to a model. We only want non important values here,
+    // incase of a malicious user trying to add extra data. This would be a mass assignment vulnerability
+    // You can use guarded to add variables that we don't want mass assigned
+    // Only use mass assignment on datat you control!
+    protected $fillable = ['title', 'excerpt', 'body', 'slug', 'category_id'];
+    protected $guarded = ['id'];
+
+    // /**
+    //  * This function will define the default variable to use when routing.  
+    //  * @return string
+    //  */
+    // public function getRouteKeyName(): string
+    // {
+    //     return self::DEFAULT_ROUTE;        
+    // }
+
+    public function category()
     {
-        $this->title = $title;
-        $this->excerpt = $excerpt;
-        $this->creationDate = $date;
-        $this->body = $body;
-        $this->slug = $slug;
+        return $this->belongsTo(Category::class);
     }
 
-    public static function all(): collection
+    public function author()
     {
-        // Must clear cache on new post creation when storing forever
-        // To look at the cache, run php artsian tinker cache->get('posts.all')
-        $posts = cache()->remember('posts.all', 60, function () { 
-            return collect(File::files(resource_path('posts/')))
-                ->map(fn ($file) => YamlFrontMatter::parseFile($file)) // We can double map here to make use of arrow functions
-                 ->map(fn ($doc) => new Post(
-                    $doc->title,
-                    $doc->excerpt,
-                    $doc->creationDate,
-                    $doc->body(),
-                    $doc->slug
-                )
-            )
-            ->sortBy(fn ($post) => $post->getCreationDate());
-        });
-
-        return $posts; 
+        return $this->belongsTo(User::class, 'user_id');
     }
-
-    private static function find(string $slug): ?Post
-    {
-        // When using protected properties:
-        $post = static::all()
-            ->filter(fn($post) => $post->getSlug() === $slug)
-            ->first();
-
-        return $post;
-    }
-
-    public static function findOrFail(string $slug): Post
-    {
-        $post = static::find($slug);
-
-        if (! $post) {
-            throw new ModelNotFoundException();
-        }
-        
-        return $post;
-    }
-
-
-	/**
-	 * @return mixed
-	 */
-	public function getTitle() {
-		return $this->title;
-	}
-	
-	/**
-	 * @param mixed $title 
-	 * @return self
-	 */
-	public function setTitle($title): self {
-		$this->title = $title;
-		return $this;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getExcerpt() {
-		return $this->excerpt;
-	}
-	
-	/**
-	 * @param mixed $excerpt 
-	 * @return self
-	 */
-	public function setExcerpt($excerpt): self {
-		$this->excerpt = $excerpt;
-		return $this;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getCreationDate() {
-		return $this->creationDate;
-	}
-	
-	/**
-	 * @param mixed $date 
-	 * @return self
-	 */
-	public function setCreationDate($date): self {
-		$this->creationDate = $date;
-		return $this;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getBody() {
-		return $this->body;
-	}
-	
-	/**
-	 * @param mixed $body 
-	 * @return self
-	 */
-	public function setBody($body): self {
-		$this->body = $body;
-		return $this;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getSlug(): string {
-		return $this->slug;
-	}
-	
-	/**
-	 * @param string $slug 
-	 * @return self
-	 */
-	public function setSlug(string $slug): self {
-		$this->slug = $slug;
-		return $this;
-	}
 }
